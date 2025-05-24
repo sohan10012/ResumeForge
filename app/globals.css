@@ -1,0 +1,184 @@
+@import url('https://fonts.googleapis.com/css2?family=Tahoma:wght@400;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground-rgb: 0, 0, 0;
+  --background-start-rgb: 214, 219, 220;
+  --background-end-rgb: 255, 255, 255;
+  --font-tahoma: 'Tahoma', sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --foreground-rgb: 255, 255, 255;
+    --background-start-rgb: 0, 0, 0;
+    --background-end-rgb: 0, 0, 0;
+  }
+}
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 3.9%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 3.9%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 3.9%;
+    
+    /* Custom color variables from the palette */
+    --royal-blue: 222 82% 21%;
+    --imperial-red: 357 96% 60%;
+    --davys-gray: 30 1% 37%;
+    --cerulean: 198 63% 38%;
+    --platinum: 0 0% 89%;
+    
+    --primary: var(--royal-blue);
+    --primary-foreground: 0 0% 98%;
+    
+    --secondary: var(--cerulean);
+    --secondary-foreground: 0 0% 98%;
+    
+    --accent: var(--imperial-red);
+    --accent-foreground: 0 0% 98%;
+    
+    --muted: 0 0% 96.1%;
+    --muted-foreground: 0 0% 45.1%;
+    
+    --destructive: var(--imperial-red);
+    --destructive-foreground: 0 0% 98%;
+    
+    --border: 0 0% 89.8%;
+    --input: 0 0% 89.8%;
+    --ring: var(--royal-blue);
+    
+    --radius: 0.5rem;
+  }
+  
+  .dark {
+    --background: 0 0% 3.9%;
+    --foreground: 0 0% 98%;
+    --card: 0 0% 3.9%;
+    --card-foreground: 0 0% 98%;
+    --popover: 0 0% 3.9%;
+    --popover-foreground: 0 0% 98%;
+    --primary: 0 0% 98%;
+    --primary-foreground: 0 0% 9%;
+    --secondary: 0 0% 14.9%;
+    --secondary-foreground: 0 0% 98%;
+    --accent: 0 0% 14.9%;
+    --accent-foreground: 0 0% 98%;
+    --muted: 0 0% 14.9%;
+    --muted-foreground: 0 0% 63.9%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 0 0% 14.9%;
+    --input: 0 0% 14.9%;
+    --ring: 0 0% 83.1%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-tahoma);
+  }
+}
+
+@layer utilities {
+  .font-tahoma {
+    font-family: var(--font-tahoma);
+  }
+  
+  .text-royal-blue {
+    color: #0a2463;
+  }
+  
+  .text-imperial-red {
+    color: #fb3640;
+  }
+  
+  .text-davys-gray {
+    color: #605f5e;
+  }
+  
+  .text-cerulean {
+    color: #247ba0;
+  }
+  
+  .text-platinum {
+    color: #e2e2e2;
+  }
+  
+  .bg-royal-blue {
+    background-color: #0a2463;
+  }
+  
+  .bg-imperial-red {
+    background-color: #fb3640;
+  }
+  
+  .bg-davys-gray {
+    background-color: #605f5e;
+  }
+  
+  .bg-cerulean {
+    background-color: #247ba0;
+  }
+  
+  .bg-platinum {
+    background-color: #e2e2e2;
+  }
+
+  /* Animation utilities */
+  .animate-fadeIn {
+    animation: fadeIn 0.5s ease-in-out;
+  }
+  
+  .animate-slideDown {
+    animation: slideDown 0.3s ease-in-out;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  
+  @keyframes slideDown {
+    from {
+      transform: translateY(-10px);
+      opacity: 0;
+    }
+    to {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+}
+
+/* Resume preview specific styles */
+.resume-container {
+  font-family: var(--font-tahoma);
+}
+
+/* PDF-specific styles */
+@media print {
+  .resume-container {
+    padding: 20mm;
+    margin: 0;
+    width: 210mm;
+    height: 297mm;
+    font-family: var(--font-tahoma);
+    font-size: 9pt;
+    line-height: 1.2;
+  }
+}
