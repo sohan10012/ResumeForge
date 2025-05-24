@@ -75,8 +75,19 @@ export default function ResumeBuilder() {
   const removeItem = (section: ArraySection, index: number) => {
     setResumeData((prev) => {
       const newData = { ...prev }
-      newData[section] = [...newData[section]]
-      newData[section].splice(index, 1)
+      if (section === 'education') {
+        newData.education = [...newData.education]
+        newData.education.splice(index, 1)
+      } else if (section === 'experience') {
+        newData.experience = [...newData.experience]
+        newData.experience.splice(index, 1)
+      } else if (section === 'projects') {
+        newData.projects = [...newData.projects]
+        newData.projects.splice(index, 1)
+      } else if (section === 'achievements') {
+        newData.achievements = [...newData.achievements]
+        newData.achievements.splice(index, 1)
+      }
       return newData
     })
   }
