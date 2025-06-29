@@ -1,6 +1,6 @@
 import React from "react";
 import Link from "next/link";
-import { ArrowRight, FileText } from "lucide-react";
+import { ArrowRight, FileText, LogIn } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export default function Home() {
@@ -13,6 +13,12 @@ export default function Home() {
             <FileText className="h-8 w-8 text-white" />
             <span className="text-2xl font-bold text-white">ResumeForge</span>
           </div>
+          <Link href="/login">
+            <Button variant="ghost" className="text-white hover:bg-white/10">
+              <LogIn className="h-4 w-4 mr-2" />
+              Login
+            </Button>
+          </Link>
         </div>
       </nav>
 
