@@ -114,7 +114,7 @@ export default function ResumeBuilder() {
       clone.style.lineHeight = "1.1"
       clone.style.fontFamily = "Tahoma, sans-serif"
       
-      // Add max-height to ensure single page
+      
       clone.style.maxHeight = "297mm"
       clone.style.overflow = "hidden"
 
