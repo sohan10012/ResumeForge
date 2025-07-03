@@ -2,6 +2,7 @@
 
 import React from 'react'
 import { ResumeData } from '@/lib/resume-types'
+import { FaEnvelope, FaLinkedin, FaGithub, FaGlobe } from 'react-icons/fa'
 
 interface ResumePreviewProps {
   resumeData: ResumeData
@@ -11,16 +12,15 @@ interface ResumePreviewProps {
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, resumeRef }) => {
   const styles = {
     container: "bg-white p-6 shadow-lg mx-auto max-w-[210mm] resume-container",
-    header: "mb-4 pb-2 border-b border-gray-200",
-    headerSideBySide: "flex justify-between items-start",
+    header: "mb-4 pb-2",
     headerCentered: "text-center",
-    name: "text-lg font-bold text-gray-900 mb-2",
-    nameCentered: "text-lg font-bold text-gray-900 mb-3",
-    contact: "text-xs text-gray-600 space-y-0.5",
-    contactCentered: "text-xs text-gray-600 space-y-1 flex flex-col items-center",
-    contactLeft: "flex flex-col",
-    contactRight: "flex flex-col text-right",
-    section: "mb-3",
+    headerRow: "flex justify-between items-start w-full",
+    name: "text-3xl font-bold text-gray-900 mb-4 text-center w-full",
+    contactCol: "flex flex-col text-xs text-gray-600 space-y-1",
+    contactCompact: "flex flex-row justify-center items-center text-xs text-gray-600 gap-4 mt-2 flex-wrap",
+    contactIcon: "inline-block align-middle mr-1",
+    contactLink: "flex items-center gap-1 mx-2",
+    section: "mb-3 mt-8",
     sectionTitle: "text-sm font-bold pb-1 mb-2 uppercase text-gray-900 border-b border-gray-200",
     education: "mb-2",
     educationInstitution: "font-bold text-xs text-gray-900",
@@ -46,6 +46,24 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, resumeRef }) 
 
   const isCenteredLayout = resumeData.personalInfo.contactLayout === 'centered';
 
+  // Helper for compact row
+  const compactDetails = [
+    resumeData.personalInfo.email && `Email: ${resumeData.personalInfo.email}`,
+    resumeData.personalInfo.linkedin && `LinkedIn: ${resumeData.personalInfo.linkedin}`,
+    resumeData.personalInfo.github && `GitHub: ${resumeData.personalInfo.github}`,
+    resumeData.personalInfo.portfolio && `Portfolio: ${resumeData.personalInfo.portfolio}`
+  ].filter(Boolean);
+
+  // Helper for full details
+  const fullDetails = [
+    resumeData.personalInfo.email && `Email: ${resumeData.personalInfo.email}`,
+    resumeData.personalInfo.phone && `Phone: ${resumeData.personalInfo.phone}`,
+    resumeData.personalInfo.location && `Location: ${resumeData.personalInfo.location}`,
+    resumeData.personalInfo.linkedin && `LinkedIn: ${resumeData.personalInfo.linkedin}`,
+    resumeData.personalInfo.github && `GitHub: ${resumeData.personalInfo.github}`,
+    resumeData.personalInfo.portfolio && `Portfolio: ${resumeData.personalInfo.portfolio}`
+  ].filter(Boolean);
+
   return (
     <div
       ref={resumeRef}
@@ -56,47 +74,55 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, resumeRef }) 
         margin: "0 auto",
         fontSize: "10pt",
         lineHeight: "1.3",
-        fontFamily: "'Times New Roman', Times, serif",
-        paddingTop: "20mm", // Added top padding for the name
+        fontFamily: "Helvetica, Arial, sans-serif",
+        paddingTop: "8mm", // Reduced top padding
       }}
     >
       {/* Header Section */}
-      <div className={`${styles.header} ${isCenteredLayout ? styles.headerCentered : styles.headerSideBySide}`}>
+      <div className={styles.headerCentered}>
+        <div className={styles.name}>{resumeData.personalInfo.name}</div>
         {isCenteredLayout ? (
-          // Centered Layout
-          <div>
-            <h1 className={styles.nameCentered}>{resumeData.personalInfo.name}</h1>
-            <div className={styles.contactCentered}>
-              <div>Email: {resumeData.personalInfo.email} | Phone: {resumeData.personalInfo.phone}</div>
-              <div>Location: {resumeData.personalInfo.location}</div>
-              {(resumeData.personalInfo.linkedin || resumeData.personalInfo.github || resumeData.personalInfo.portfolio) && (
-                <div>
-                  {[
-                    resumeData.personalInfo.linkedin && `LinkedIn: ${resumeData.personalInfo.linkedin}`,
-                    resumeData.personalInfo.github && `GitHub: ${resumeData.personalInfo.github}`,
-                    resumeData.personalInfo.portfolio && `Portfolio: ${resumeData.personalInfo.portfolio}`
-                  ].filter(Boolean).join(' | ')}
-                </div>
-              )}
-            </div>
+          // Centered Below Name: 4 links in a single row with icons
+          <div className={styles.contactCompact}>
+            {resumeData.personalInfo.email && (
+              <span className={styles.contactLink}>
+                <FaEnvelope className={styles.contactIcon} />
+                {resumeData.personalInfo.email}
+              </span>
+            )}
+            {resumeData.personalInfo.linkedin && (
+              <span className={styles.contactLink}>
+                <FaLinkedin className={styles.contactIcon} />
+                {resumeData.personalInfo.linkedin}
+              </span>
+            )}
+            {resumeData.personalInfo.github && (
+              <span className={styles.contactLink}>
+                <FaGithub className={styles.contactIcon} />
+                {resumeData.personalInfo.github}
+              </span>
+            )}
+            {resumeData.personalInfo.portfolio && (
+              <span className={styles.contactLink}>
+                <FaGlobe className={styles.contactIcon} />
+                {resumeData.personalInfo.portfolio}
+              </span>
+            )}
           </div>
         ) : (
-          // Side by Side Layout
-          <>
-            <div>
-              <h1 className={styles.name}>{resumeData.personalInfo.name}</h1>
-              <div className={`${styles.contact} ${styles.contactLeft}`}>
-                <div>Email: {resumeData.personalInfo.email}</div>
-                <div>Phone: {resumeData.personalInfo.phone}</div>
-                <div>Location: {resumeData.personalInfo.location}</div>
-              </div>
+          // Full Details: left and right columns, name centered
+          <div className={styles.headerRow}>
+            <div className={styles.contactCol} style={{textAlign: 'left'}}>
+              {resumeData.personalInfo.email && <div>Email: {resumeData.personalInfo.email}</div>}
+              {resumeData.personalInfo.phone && <div>Phone: {resumeData.personalInfo.phone}</div>}
+              {resumeData.personalInfo.location && <div>Location: {resumeData.personalInfo.location}</div>}
             </div>
-            <div className={`${styles.contact} ${styles.contactRight}`}>
-              <div>LinkedIn: {resumeData.personalInfo.linkedin}</div>
-              <div>GitHub: {resumeData.personalInfo.github}</div>
-              <div>Portfolio: {resumeData.personalInfo.portfolio}</div>
+            <div className={styles.contactCol} style={{textAlign: 'right'}}>
+              {resumeData.personalInfo.linkedin && <div>LinkedIn: {resumeData.personalInfo.linkedin}</div>}
+              {resumeData.personalInfo.github && <div>GitHub: {resumeData.personalInfo.github}</div>}
+              {resumeData.personalInfo.portfolio && <div>Portfolio: {resumeData.personalInfo.portfolio}</div>}
             </div>
-          </>
+          </div>
         )}
       </div>
 

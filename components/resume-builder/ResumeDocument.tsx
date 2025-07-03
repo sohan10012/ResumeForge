@@ -13,58 +13,91 @@ Font.register({
   ]
 });
 
+// Add minimal SVG icon components for PDF rendering
+const IconEmail = () => (
+  <svg width="10" height="10" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#222"/><path d="M4 6l6 5 6-5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/><rect x="4" y="6" width="12" height="8" rx="2" stroke="#fff" strokeWidth="1.5"/></svg>
+);
+const IconLinkedIn = () => (
+  <svg width="10" height="10" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#222"/><path d="M6.5 8.5v5m7-5v5m-7-7a1 1 0 11-2 0 1 1 0 012 0zm7 0a1 1 0 11-2 0 1 1 0 012 0zm-7 7h2m5-2.5a2.5 2.5 0 00-5 0V13" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+const IconGitHub = () => (
+  <svg width="10" height="10" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#222"/><path d="M10 15v-2.5m0 0c-3.5 0-4-1.5-4-3.5a4 4 0 018 0c0 2-0.5 3.5-4 3.5zm0 0v2.5" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+);
+const IconPortfolio = () => (
+  <svg width="10" height="10" viewBox="0 0 20 20" fill="none"><rect width="20" height="20" rx="4" fill="#222"/><circle cx="10" cy="10" r="4" stroke="#fff" strokeWidth="1.5"/><path d="M10 6v4l3 2" stroke="#fff" strokeWidth="1.5" strokeLinecap="round"/></svg>
+);
+
+// Register Helvetica font
+Font.register({
+  family: 'Helvetica',
+  fonts: [
+    { src: 'Helvetica' },
+    { src: 'Helvetica-Bold', fontWeight: 'bold' },
+    { src: 'Helvetica-Oblique', fontStyle: 'italic' },
+    { src: 'Helvetica-BoldOblique', fontWeight: 'bold', fontStyle: 'italic' },
+  ]
+});
+
 const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Times-Roman',
+    fontFamily: 'Helvetica',
     fontSize: 9,
     lineHeight: 1.2,
     color: '#1f2937',
     padding: 20,
-    paddingTop: 30, // Added top padding for the name
+    paddingTop: 16, // Reduced top padding
     backgroundColor: '#ffffff',
   },
   header: {
     marginBottom: 12,
     paddingBottom: 8,
-    borderBottomWidth: 1,
-    borderBottomColor: '#e5e7eb',
-    borderBottomStyle: 'solid',
+    alignItems: 'center',
   },
   name: {
-    fontSize: 18,
+    fontSize: 19,
     fontWeight: 'bold',
     color: '#111827',
-    marginBottom: 6,
+    marginBottom: 16,
     textAlign: 'center',
   },
-  // Side by side layout
-  contactInfoSideBySide: {
+  contactRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 2,
+    marginBottom: 2,
+    gap: 8,
+  },
+  contactIcon: {
+    marginRight: 2,
+    marginLeft: 2,
+  },
+  contactLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: 6,
+    fontSize: 8,
+    color: '#4b5563',
+  },
+  contactColRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    fontSize: 8,
-    color: '#4b5563',
+    width: '100%',
+    marginTop: 2,
   },
-  contactLeft: {
-    flex: 1,
-  },
-  contactRight: {
-    flex: 1,
-    textAlign: 'right',
-  },
-  // Centered layout
-  contactInfoCentered: {
+  contactCol: {
     flexDirection: 'column',
-    alignItems: 'center',
     fontSize: 8,
     color: '#4b5563',
-    textAlign: 'center',
+    alignItems: 'flex-start',
+    flex: 1,
   },
-  contactItem: {
-    marginBottom: 1,
-  },
-  contactLineCentered: {
-    marginBottom: 2,
+  contactColRight: {
+    flexDirection: 'column',
+    fontSize: 8,
+    color: '#4b5563',
+    alignItems: 'flex-end',
+    flex: 1,
   },
   section: {
     marginBottom: 10,
@@ -223,54 +256,59 @@ const ResumeDocument: React.FC<ResumeDocumentProps> = ({ resumeData }) => {
 
   const renderContactInfo = () => {
     if (isCenteredLayout) {
+      // Centered: 4 links in a single row with icons
       return (
-        <View style={styles.contactInfoCentered}>
-          <Text style={styles.contactLineCentered}>
-            Email: {resumeData.personalInfo.email} | Phone: {resumeData.personalInfo.phone}
-          </Text>
-          <Text style={styles.contactLineCentered}>
-            Location: {resumeData.personalInfo.location}
-          </Text>
-          {(resumeData.personalInfo.linkedin || resumeData.personalInfo.github || resumeData.personalInfo.portfolio) && (
-            <Text style={styles.contactLineCentered}>
-              {[
-                resumeData.personalInfo.linkedin && `LinkedIn: ${cleanUrl(resumeData.personalInfo.linkedin)}`,
-                resumeData.personalInfo.github && `GitHub: ${cleanUrl(resumeData.personalInfo.github)}`,
-                resumeData.personalInfo.portfolio && `Portfolio: ${cleanUrl(resumeData.personalInfo.portfolio)}`
-              ].filter(Boolean).join(' | ')}
-            </Text>
+        <View style={styles.contactRow}>
+          {resumeData.personalInfo.email && (
+            <View style={styles.contactLink}>
+              <IconEmail />
+              <Text>{resumeData.personalInfo.email}</Text>
+            </View>
+          )}
+          {resumeData.personalInfo.linkedin && (
+            <View style={styles.contactLink}>
+              <IconLinkedIn />
+              <Text>{resumeData.personalInfo.linkedin}</Text>
+            </View>
+          )}
+          {resumeData.personalInfo.github && (
+            <View style={styles.contactLink}>
+              <IconGitHub />
+              <Text>{resumeData.personalInfo.github}</Text>
+            </View>
+          )}
+          {resumeData.personalInfo.portfolio && (
+            <View style={styles.contactLink}>
+              <IconPortfolio />
+              <Text>{resumeData.personalInfo.portfolio}</Text>
+            </View>
           )}
         </View>
       );
     } else {
+      // Full Details: left and right columns, name centered
       return (
-        <View style={styles.contactInfoSideBySide}>
-          <View style={styles.contactLeft}>
-            <Text style={styles.contactItem}>
-              Email: {resumeData.personalInfo.email}
-            </Text>
-            <Text style={styles.contactItem}>
-              Phone: {resumeData.personalInfo.phone}
-            </Text>
-            <Text style={styles.contactItem}>
-              Location: {resumeData.personalInfo.location}
-            </Text>
+        <View style={styles.contactColRow}>
+          <View style={styles.contactCol}>
+            {resumeData.personalInfo.email && (
+              <Text>Email: {resumeData.personalInfo.email}</Text>
+            )}
+            {resumeData.personalInfo.phone && (
+              <Text>Phone: {resumeData.personalInfo.phone}</Text>
+            )}
+            {resumeData.personalInfo.location && (
+              <Text>Location: {resumeData.personalInfo.location}</Text>
+            )}
           </View>
-          <View style={styles.contactRight}>
+          <View style={styles.contactColRight}>
             {resumeData.personalInfo.linkedin && (
-              <Text style={styles.contactItem}>
-                LinkedIn: {cleanUrl(resumeData.personalInfo.linkedin)}
-              </Text>
+              <Text>LinkedIn: {resumeData.personalInfo.linkedin}</Text>
             )}
             {resumeData.personalInfo.github && (
-              <Text style={styles.contactItem}>
-                GitHub: {cleanUrl(resumeData.personalInfo.github)}
-              </Text>
+              <Text>GitHub: {resumeData.personalInfo.github}</Text>
             )}
             {resumeData.personalInfo.portfolio && (
-              <Text style={styles.contactItem}>
-                Portfolio: {cleanUrl(resumeData.personalInfo.portfolio)}
-              </Text>
+              <Text>Portfolio: {resumeData.personalInfo.portfolio}</Text>
             )}
           </View>
         </View>
