@@ -3,7 +3,7 @@
 import React, { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { PDFDownloadLink } from '@react-pdf/renderer';
+import { pdf } from '@react-pdf/renderer';
 import { Download, ArrowLeft, FileText } from "lucide-react"
 import { initialResumeData, getDefaultArrayItem } from "@/lib/resume-data"
 import { ResumeData, ExpandedSections, Section, ArraySection } from "@/lib/resume-types"
@@ -29,6 +29,7 @@ export default function ResumeBuilder() {
     projects: false,
     achievements: false,
   })
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const resumeRef = useRef<HTMLDivElement>(null)
 
   const handleSectionToggle = (section: Section) => {
@@ -93,264 +94,38 @@ export default function ResumeBuilder() {
     })
   }
 
-const downloadPDF = async () => {
-  const element = resumeRef.current;
-  if (!element) {
-    throw new Error('Resume element reference not found');
-  }
-
-  let tempContainer: HTMLElement | null = null;
-  
-  try {
-    // Dynamic import with version pinning for stability
-    const html2pdf = (await import('html2pdf.js')).default;
-    
-    // Professional-grade configuration optimized for pixel-perfect rendering
-    const opt = {
-      margin: [0, 0, 0, 0], // Zero margins for precise control
-      filename: `resume_${new Date().toISOString().split('T')[0]}.pdf`,
-      image: { 
-        type: 'jpeg', 
-        quality: 1.0 // Maximum quality
-      },
-      html2canvas: { 
-        scale: 3, // Higher scale for crisp rendering
-        useCORS: true,
-        allowTaint: false,
-        letterRendering: true,
-        scrollX: 0,
-        scrollY: 0,
-        backgroundColor: '#ffffff',
-        removeContainer: true,
-        imageTimeout: 30000,
-        logging: false,
-        onclone: (clonedDoc: Document) => {
-          // Ensure all styles are properly cloned
-          const clonedElement = clonedDoc.body.firstElementChild as HTMLElement;
-          if (clonedElement) {
-            clonedElement.style.transform = 'scale(1)';
-            clonedElement.style.transformOrigin = 'top left';
-          }
-        }
-      },
-      jsPDF: { 
-        unit: 'mm', 
-        format: 'a4',
-        orientation: 'portrait',
-        compress: true,
-        precision: 2
-      },
-      pagebreak: { 
-        mode: ['css', 'legacy'],
-        before: '.page-break, .page-break-before',
-        after: '.page-break-after',
-        avoid: ['.keep-together', '.no-break', '.avoid-break']
-      }
-    };
-
-    // Create pixel-perfect clone
-    const clone = element.cloneNode(true) as HTMLElement;
-    
-    // Get computed styles from original element
-    const originalStyles = window.getComputedStyle(element);
-    const originalRect = element.getBoundingClientRect();
-    
-    // Apply precise A4 styling with computed dimensions
-    clone.style.cssText = `
-      width: 210mm !important;
-      max-width: 210mm !important;
-      min-height: 297mm !important;
-      padding: 12mm !important;
-      margin: 0 !important;
-      font-family: ${originalStyles.fontFamily} !important;
-      font-size: ${originalStyles.fontSize} !important;
-      line-height: ${originalStyles.lineHeight} !important;
-      color: ${originalStyles.color} !important;
-      background: #ffffff !important;
-      box-sizing: border-box !important;
-      overflow: visible !important;
-      position: relative !important;
-      display: block !important;
-      zoom: 1 !important;
-      -webkit-font-smoothing: subpixel-antialiased !important;
-      -moz-osx-font-smoothing: auto !important;
-      text-rendering: optimizeLegibility !important;
-      -webkit-print-color-adjust: exact !important;
-      print-color-adjust: exact !important;
-    `;
-
-    // Deep clone and enhance all child elements
-    const processElement = (el: HTMLElement, depth = 0) => {
-      if (depth > 100) return; // Prevent infinite recursion
+  const downloadPDF = async () => {
+    try {
+      setIsGeneratingPDF(true);
       
-      const computedStyle = window.getComputedStyle(el);
+      // Generate the PDF blob using @react-pdf/renderer
+      const blob = await pdf(<ResumeDocument resumeData={resumeData} />).toBlob();
       
-      // Preserve exact styling
-      el.style.cssText += `
-        -webkit-print-color-adjust: exact !important;
-        print-color-adjust: exact !important;
-        box-sizing: ${computedStyle.boxSizing} !important;
-        display: ${computedStyle.display} !important;
-        position: ${computedStyle.position === 'fixed' ? 'absolute' : computedStyle.position} !important;
-        font-weight: ${computedStyle.fontWeight} !important;
-        font-style: ${computedStyle.fontStyle} !important;
-        text-decoration: ${computedStyle.textDecoration} !important;
-        text-align: ${computedStyle.textAlign} !important;
-        vertical-align: ${computedStyle.verticalAlign} !important;
-        border: ${computedStyle.border} !important;
-        border-radius: ${computedStyle.borderRadius} !important;
-        background: ${computedStyle.background} !important;
-        padding: ${computedStyle.padding} !important;
-        margin: ${computedStyle.margin} !important;
-        width: ${computedStyle.width !== 'auto' ? computedStyle.width : ''} !important;
-        height: ${computedStyle.height !== 'auto' ? computedStyle.height : ''} !important;
-        max-width: ${computedStyle.maxWidth !== 'none' ? computedStyle.maxWidth : ''} !important;
-        min-height: ${computedStyle.minHeight !== '0px' ? computedStyle.minHeight : ''} !important;
-        text-rendering: optimizeLegibility !important;
-        -webkit-font-smoothing: subpixel-antialiased !important;
-        -moz-osx-font-smoothing: auto !important;
-      `;
-
-      // Handle images with enhanced loading
-      if (el.tagName === 'IMG') {
-        const img = el as HTMLImageElement;
-        img.style.cssText += `
-          max-width: 100% !important;
-          height: auto !important;
-          display: ${computedStyle.display} !important;
-          object-fit: ${computedStyle.objectFit} !important;
-          border-radius: ${computedStyle.borderRadius} !important;
-        `;
-        
-        // Ensure images are loaded and accessible
-        if (img.src && !img.src.startsWith('data:')) {
-          img.crossOrigin = 'anonymous';
-          img.decoding = 'sync';
-        }
-      }
-
-      // Handle SVG elements
-      if (el.tagName === 'SVG') {
-        el.style.cssText += `
-          display: ${computedStyle.display} !important;
-          width: ${computedStyle.width} !important;
-          height: ${computedStyle.height} !important;
-        `;
-      }
-
-      // Process children recursively
-      Array.from(el.children).forEach(child => {
-        if (child instanceof HTMLElement) {
-          processElement(child, depth + 1);
-        }
-      });
-    };
-
-    // Process all elements in the clone
-    processElement(clone);
-
-    // Enhance page break handling
-    const pageBreaks = clone.querySelectorAll('.page-break, .page-break-before');
-    pageBreaks.forEach((el: Element) => {
-      const htmlEl = el as HTMLElement;
-      htmlEl.style.cssText = `
-        page-break-before: always !important;
-        break-before: page !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        border: none !important;
-        display: block !important;
-        clear: both !important;
-      `;
-    });
-
-    // Create isolated rendering container
-    tempContainer = document.createElement('div');
-    tempContainer.style.cssText = `
-      position: fixed !important;
-      top: -200vh !important;
-      left: -200vw !important;
-      width: 210mm !important;
-      height: 297mm !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-      z-index: -9999 !important;
-      overflow: hidden !important;
-      background: #ffffff !important;
-      font-family: ${originalStyles.fontFamily} !important;
-    `;
-    
-    tempContainer.appendChild(clone);
-    document.body.appendChild(tempContainer);
-
-    // Wait for complete resource loading
-    await new Promise<void>((resolve) => {
-      const images = tempContainer!.querySelectorAll('img');
-      const fonts = document.fonts;
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
       
-      const imagePromises = Array.from(images).map(img => {
-        if (img.complete && img.naturalHeight !== 0) {
-          return Promise.resolve();
-        }
-        return new Promise<void>(resolve => {
-          const timeout = setTimeout(() => resolve(), 10000);
-          img.onload = () => {
-            clearTimeout(timeout);
-            resolve();
-          };
-          img.onerror = () => {
-            clearTimeout(timeout);
-            resolve();
-          };
-        });
-      });
-
-      Promise.all([
-        fonts.ready,
-        ...imagePromises,
-        new Promise(resolve => setTimeout(resolve, 1000)) // Style settling time
-      ]).then(() => resolve());
-    });
-
-    // Force layout recalculation
-    clone.offsetHeight;
-    
-    // Generate PDF with enhanced precision
-    const pdfInstance = html2pdf().set(opt).from(clone);
-    
-    await pdfInstance
-      .save()
-      .then(() => {
-        // PDF generation completed successfully
-        console.log('PDF generated successfully');
-      });
-
-  } catch (error) {
-    console.error('Professional PDF generation failed:', error);
-    
-    // Enhanced error reporting
-    if (error instanceof Error) {
-      if (error.message.includes('html2pdf')) {
-        throw new Error('PDF library failed to load. Please check your network connection and try again.');
-      } else if (error.message.includes('CORS')) {
-        throw new Error('Image loading failed due to security restrictions. Please ensure all images are properly hosted.');
-      } else if (error.message.includes('canvas')) {
-        throw new Error('Canvas rendering failed. This may be due to browser compatibility issues.');
-      } else {
-        throw new Error(`PDF generation failed: ${error.message}`);
-      }
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const fileName = `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume_${currentDate}.pdf`;
+      link.download = fileName;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+    } catch (error) {
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
     }
-    
-    throw new Error('An unexpected error occurred during PDF generation.');
-    
-  } finally {
-    // Guaranteed cleanup
-    if (tempContainer && tempContainer.parentNode) {
-      document.body.removeChild(tempContainer);
-    }
-  }
-};
+  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
@@ -485,9 +260,10 @@ const downloadPDF = async () => {
               variant="default"
               className="bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2"
               onClick={downloadPDF}
+              disabled={isGeneratingPDF}
             >
               <Download className="h-4 w-4" />
-              Download PDF
+              {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}
             </Button>
           </div>
           
