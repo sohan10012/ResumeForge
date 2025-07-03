@@ -13,8 +13,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
-      <body className="font-tahoma min-h-screen bg-platinum-100">
+    <html lang="en" suppressHydrationWarning>
+      <body className="font-tahoma min-h-screen">
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem>
           {children}
         </ThemeProvider>

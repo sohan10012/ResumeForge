@@ -50,16 +50,19 @@ export interface SkillsData {
   softSkills: string;
 }
 
+export interface PersonalInfo {
+  name: string;
+  email: string;
+  phone: string;
+  location: string;
+  linkedin: string;
+  github: string;
+  portfolio: string;
+  contactLayout: 'side-by-side' | 'centered'; // New field for layout preference
+}
+
 export interface ResumeData {
-  personalInfo: {
-    name: string;
-    email: string;
-    phone: string;
-    location: string;
-    linkedin: string;
-    github: string;
-    portfolio: string;
-  };
+  personalInfo: PersonalInfo;
   education: EducationItem[];
   skills: SkillsData;
   experience: ExperienceItem[];

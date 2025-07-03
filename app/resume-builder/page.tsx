@@ -3,11 +3,13 @@
 import React, { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { pdf } from '@react-pdf/renderer';
 import { Download, ArrowLeft, FileText } from "lucide-react"
 import { initialResumeData, getDefaultArrayItem } from "@/lib/resume-data"
 import { ResumeData, ExpandedSections, Section, ArraySection } from "@/lib/resume-types"
 
 // Import components
+import ResumeDocument from "@/components/resume-builder/ResumeDocument";
 import SectionHeader from "@/components/resume-builder/section-header"
 import PersonalSection from "@/components/resume-builder/personal-section"
 import EducationSection from "@/components/resume-builder/education-section"
@@ -27,6 +29,7 @@ export default function ResumeBuilder() {
     projects: false,
     achievements: false,
   })
+  const [isGeneratingPDF, setIsGeneratingPDF] = useState(false)
   const resumeRef = useRef<HTMLDivElement>(null)
 
   const handleSectionToggle = (section: Section) => {
@@ -92,37 +95,37 @@ export default function ResumeBuilder() {
   }
 
   const downloadPDF = async () => {
-    const element = resumeRef.current
-    if (!element) return
-
     try {
-      const html2pdf = (await import('html2pdf.js')).default
+      setIsGeneratingPDF(true);
       
-      const opt = {
-        margin: [5, 5],
-        filename: "resume.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: "avoid-all", before: ".page-break" }
-      }
-
-      const clone = element.cloneNode(true) as HTMLElement
-      clone.style.width = "210mm"
-      clone.style.padding = "10mm"
-      clone.style.fontSize = "8pt"
-      clone.style.lineHeight = "1.1"
-      clone.style.fontFamily = "Tahoma, sans-serif"
+      // Generate the PDF blob using @react-pdf/renderer
+      const blob = await pdf(<ResumeDocument resumeData={resumeData} />).toBlob();
       
-      // Add max-height to ensure single page
-      clone.style.maxHeight = "297mm"
-      clone.style.overflow = "hidden"
-
-      await html2pdf().set(opt).from(clone).save()
+      // Create download link
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      
+      // Generate filename with current date
+      const currentDate = new Date().toISOString().split('T')[0];
+      const fileName = `${resumeData.personalInfo.name.replace(/\s+/g, '_')}_Resume_${currentDate}.pdf`;
+      link.download = fileName;
+      
+      // Trigger download
+      document.body.appendChild(link);
+      link.click();
+      
+      // Cleanup
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
     } catch (error) {
-      console.error('Error generating PDF:', error)
+      console.error('Error generating PDF:', error);
+      alert('Failed to generate PDF. Please try again.');
+    } finally {
+      setIsGeneratingPDF(false);
     }
-  }
+  };
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
@@ -257,9 +260,10 @@ export default function ResumeBuilder() {
               variant="default"
               className="bg-gray-900 hover:bg-gray-800 text-white flex items-center gap-2"
               onClick={downloadPDF}
+              disabled={isGeneratingPDF}
             >
               <Download className="h-4 w-4" />
-              Download PDF
+              {isGeneratingPDF ? 'Generating PDF...' : 'Download PDF'}
             </Button>
           </div>
           
