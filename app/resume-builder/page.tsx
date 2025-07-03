@@ -3,11 +3,13 @@
 import React, { useState, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { PDFDownloadLink } from '@react-pdf/renderer';
 import { Download, ArrowLeft, FileText } from "lucide-react"
 import { initialResumeData, getDefaultArrayItem } from "@/lib/resume-data"
 import { ResumeData, ExpandedSections, Section, ArraySection } from "@/lib/resume-types"
 
 // Import components
+import ResumeDocument from "@/components/resume-builder/ResumeDocument";
 import SectionHeader from "@/components/resume-builder/section-header"
 import PersonalSection from "@/components/resume-builder/personal-section"
 import EducationSection from "@/components/resume-builder/education-section"
@@ -91,38 +93,264 @@ export default function ResumeBuilder() {
     })
   }
 
-  const downloadPDF = async () => {
-    const element = resumeRef.current
-    if (!element) return
+const downloadPDF = async () => {
+  const element = resumeRef.current;
+  if (!element) {
+    throw new Error('Resume element reference not found');
+  }
 
-    try {
-      const html2pdf = (await import('html2pdf.js')).default
+  let tempContainer: HTMLElement | null = null;
+  
+  try {
+    // Dynamic import with version pinning for stability
+    const html2pdf = (await import('html2pdf.js')).default;
+    
+    // Professional-grade configuration optimized for pixel-perfect rendering
+    const opt = {
+      margin: [0, 0, 0, 0], // Zero margins for precise control
+      filename: `resume_${new Date().toISOString().split('T')[0]}.pdf`,
+      image: { 
+        type: 'jpeg', 
+        quality: 1.0 // Maximum quality
+      },
+      html2canvas: { 
+        scale: 3, // Higher scale for crisp rendering
+        useCORS: true,
+        allowTaint: false,
+        letterRendering: true,
+        scrollX: 0,
+        scrollY: 0,
+        backgroundColor: '#ffffff',
+        removeContainer: true,
+        imageTimeout: 30000,
+        logging: false,
+        onclone: (clonedDoc: Document) => {
+          // Ensure all styles are properly cloned
+          const clonedElement = clonedDoc.body.firstElementChild as HTMLElement;
+          if (clonedElement) {
+            clonedElement.style.transform = 'scale(1)';
+            clonedElement.style.transformOrigin = 'top left';
+          }
+        }
+      },
+      jsPDF: { 
+        unit: 'mm', 
+        format: 'a4',
+        orientation: 'portrait',
+        compress: true,
+        precision: 2
+      },
+      pagebreak: { 
+        mode: ['css', 'legacy'],
+        before: '.page-break, .page-break-before',
+        after: '.page-break-after',
+        avoid: ['.keep-together', '.no-break', '.avoid-break']
+      }
+    };
+
+    // Create pixel-perfect clone
+    const clone = element.cloneNode(true) as HTMLElement;
+    
+    // Get computed styles from original element
+    const originalStyles = window.getComputedStyle(element);
+    const originalRect = element.getBoundingClientRect();
+    
+    // Apply precise A4 styling with computed dimensions
+    clone.style.cssText = `
+      width: 210mm !important;
+      max-width: 210mm !important;
+      min-height: 297mm !important;
+      padding: 12mm !important;
+      margin: 0 !important;
+      font-family: ${originalStyles.fontFamily} !important;
+      font-size: ${originalStyles.fontSize} !important;
+      line-height: ${originalStyles.lineHeight} !important;
+      color: ${originalStyles.color} !important;
+      background: #ffffff !important;
+      box-sizing: border-box !important;
+      overflow: visible !important;
+      position: relative !important;
+      display: block !important;
+      zoom: 1 !important;
+      -webkit-font-smoothing: subpixel-antialiased !important;
+      -moz-osx-font-smoothing: auto !important;
+      text-rendering: optimizeLegibility !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    `;
+
+    // Deep clone and enhance all child elements
+    const processElement = (el: HTMLElement, depth = 0) => {
+      if (depth > 100) return; // Prevent infinite recursion
       
-      const opt = {
-        margin: [5, 5],
-        filename: "resume.pdf",
-        image: { type: "jpeg", quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: "mm", format: "a4", orientation: "portrait" },
-        pagebreak: { mode: "avoid-all", before: ".page-break" }
+      const computedStyle = window.getComputedStyle(el);
+      
+      // Preserve exact styling
+      el.style.cssText += `
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
+        box-sizing: ${computedStyle.boxSizing} !important;
+        display: ${computedStyle.display} !important;
+        position: ${computedStyle.position === 'fixed' ? 'absolute' : computedStyle.position} !important;
+        font-weight: ${computedStyle.fontWeight} !important;
+        font-style: ${computedStyle.fontStyle} !important;
+        text-decoration: ${computedStyle.textDecoration} !important;
+        text-align: ${computedStyle.textAlign} !important;
+        vertical-align: ${computedStyle.verticalAlign} !important;
+        border: ${computedStyle.border} !important;
+        border-radius: ${computedStyle.borderRadius} !important;
+        background: ${computedStyle.background} !important;
+        padding: ${computedStyle.padding} !important;
+        margin: ${computedStyle.margin} !important;
+        width: ${computedStyle.width !== 'auto' ? computedStyle.width : ''} !important;
+        height: ${computedStyle.height !== 'auto' ? computedStyle.height : ''} !important;
+        max-width: ${computedStyle.maxWidth !== 'none' ? computedStyle.maxWidth : ''} !important;
+        min-height: ${computedStyle.minHeight !== '0px' ? computedStyle.minHeight : ''} !important;
+        text-rendering: optimizeLegibility !important;
+        -webkit-font-smoothing: subpixel-antialiased !important;
+        -moz-osx-font-smoothing: auto !important;
+      `;
+
+      // Handle images with enhanced loading
+      if (el.tagName === 'IMG') {
+        const img = el as HTMLImageElement;
+        img.style.cssText += `
+          max-width: 100% !important;
+          height: auto !important;
+          display: ${computedStyle.display} !important;
+          object-fit: ${computedStyle.objectFit} !important;
+          border-radius: ${computedStyle.borderRadius} !important;
+        `;
+        
+        // Ensure images are loaded and accessible
+        if (img.src && !img.src.startsWith('data:')) {
+          img.crossOrigin = 'anonymous';
+          img.decoding = 'sync';
+        }
       }
 
-      const clone = element.cloneNode(true) as HTMLElement
-      clone.style.width = "210mm"
-      clone.style.padding = "10mm"
-      clone.style.fontSize = "8pt"
-      clone.style.lineHeight = "1.1"
-      clone.style.fontFamily = "Tahoma, sans-serif"
-      
-      
-      clone.style.maxHeight = "297mm"
-      clone.style.overflow = "hidden"
+      // Handle SVG elements
+      if (el.tagName === 'SVG') {
+        el.style.cssText += `
+          display: ${computedStyle.display} !important;
+          width: ${computedStyle.width} !important;
+          height: ${computedStyle.height} !important;
+        `;
+      }
 
-      await html2pdf().set(opt).from(clone).save()
-    } catch (error) {
-      console.error('Error generating PDF:', error)
+      // Process children recursively
+      Array.from(el.children).forEach(child => {
+        if (child instanceof HTMLElement) {
+          processElement(child, depth + 1);
+        }
+      });
+    };
+
+    // Process all elements in the clone
+    processElement(clone);
+
+    // Enhance page break handling
+    const pageBreaks = clone.querySelectorAll('.page-break, .page-break-before');
+    pageBreaks.forEach((el: Element) => {
+      const htmlEl = el as HTMLElement;
+      htmlEl.style.cssText = `
+        page-break-before: always !important;
+        break-before: page !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        display: block !important;
+        clear: both !important;
+      `;
+    });
+
+    // Create isolated rendering container
+    tempContainer = document.createElement('div');
+    tempContainer.style.cssText = `
+      position: fixed !important;
+      top: -200vh !important;
+      left: -200vw !important;
+      width: 210mm !important;
+      height: 297mm !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+      z-index: -9999 !important;
+      overflow: hidden !important;
+      background: #ffffff !important;
+      font-family: ${originalStyles.fontFamily} !important;
+    `;
+    
+    tempContainer.appendChild(clone);
+    document.body.appendChild(tempContainer);
+
+    // Wait for complete resource loading
+    await new Promise<void>((resolve) => {
+      const images = tempContainer!.querySelectorAll('img');
+      const fonts = document.fonts;
+      
+      const imagePromises = Array.from(images).map(img => {
+        if (img.complete && img.naturalHeight !== 0) {
+          return Promise.resolve();
+        }
+        return new Promise<void>(resolve => {
+          const timeout = setTimeout(() => resolve(), 10000);
+          img.onload = () => {
+            clearTimeout(timeout);
+            resolve();
+          };
+          img.onerror = () => {
+            clearTimeout(timeout);
+            resolve();
+          };
+        });
+      });
+
+      Promise.all([
+        fonts.ready,
+        ...imagePromises,
+        new Promise(resolve => setTimeout(resolve, 1000)) // Style settling time
+      ]).then(() => resolve());
+    });
+
+    // Force layout recalculation
+    clone.offsetHeight;
+    
+    // Generate PDF with enhanced precision
+    const pdfInstance = html2pdf().set(opt).from(clone);
+    
+    await pdfInstance
+      .save()
+      .then(() => {
+        // PDF generation completed successfully
+        console.log('PDF generated successfully');
+      });
+
+  } catch (error) {
+    console.error('Professional PDF generation failed:', error);
+    
+    // Enhanced error reporting
+    if (error instanceof Error) {
+      if (error.message.includes('html2pdf')) {
+        throw new Error('PDF library failed to load. Please check your network connection and try again.');
+      } else if (error.message.includes('CORS')) {
+        throw new Error('Image loading failed due to security restrictions. Please ensure all images are properly hosted.');
+      } else if (error.message.includes('canvas')) {
+        throw new Error('Canvas rendering failed. This may be due to browser compatibility issues.');
+      } else {
+        throw new Error(`PDF generation failed: ${error.message}`);
+      }
+    }
+    
+    throw new Error('An unexpected error occurred during PDF generation.');
+    
+  } finally {
+    // Guaranteed cleanup
+    if (tempContainer && tempContainer.parentNode) {
+      document.body.removeChild(tempContainer);
     }
   }
+};
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-gray-50">
