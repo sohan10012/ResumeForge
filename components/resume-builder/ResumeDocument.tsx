@@ -1,21 +1,10 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet, Font, Link } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Link } from '@react-pdf/renderer';
 import { ResumeData } from '@/lib/resume-types';
-
-// Register fonts for better typography - using TTF format for PDF compatibility
-Font.register({
-  family: 'Inter',
-  fonts: [
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa1ZL7.ttf', fontWeight: 400 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa2ZL7.ttf', fontWeight: 400, fontStyle: 'italic' },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa5ZL7.ttf', fontWeight: 600 },
-    { src: 'https://fonts.gstatic.com/s/inter/v12/UcC73FwrK3iLTeHuS_fvQtMwCp50KnMa0ZL7.ttf', fontWeight: 700 },
-  ]
-});
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Inter',
+    fontFamily: 'Helvetica',
     fontSize: 10,
     lineHeight: 1.4,
     color: '#1f2937',
@@ -31,7 +20,7 @@ const styles = StyleSheet.create({
   },
   name: {
     fontSize: 24,
-    fontWeight: 700,
+    fontWeight: 'bold',
     color: '#111827',
     marginBottom: 8,
     textAlign: 'center',
@@ -58,7 +47,7 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 12,
-    fontWeight: 700,
+    fontWeight: 'bold',
     color: '#111827',
     textTransform: 'uppercase',
     letterSpacing: 0.5,
@@ -73,7 +62,7 @@ const styles = StyleSheet.create({
   },
   institutionName: {
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 'bold',
     color: '#111827',
     marginBottom: 2,
   },
@@ -86,13 +75,13 @@ const styles = StyleSheet.create({
   degreeText: {
     fontSize: 10,
     color: '#374151',
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
     flex: 1,
   },
   dateText: {
     fontSize: 9,
     color: '#6b7280',
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
   },
   locationText: {
     fontSize: 9,
@@ -108,7 +97,7 @@ const styles = StyleSheet.create({
   },
   skillLabel: {
     fontSize: 10,
-    fontWeight: 600,
+    fontWeight: 'bold',
     color: '#111827',
     width: 80,
     marginRight: 8,
@@ -130,13 +119,13 @@ const styles = StyleSheet.create({
   },
   companyName: {
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 'bold',
     color: '#111827',
   },
   positionTitle: {
     fontSize: 10,
     color: '#374151',
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
     marginBottom: 1,
   },
   experienceLocation: {
@@ -163,14 +152,14 @@ const styles = StyleSheet.create({
   },
   projectTitle: {
     fontSize: 11,
-    fontWeight: 600,
+    fontWeight: 'bold',
     color: '#111827',
     marginBottom: 2,
   },
   projectMeta: {
     fontSize: 9,
     color: '#6b7280',
-    fontStyle: 'italic',
+    fontFamily: 'Helvetica-Oblique',
     marginBottom: 3,
   },
   projectDescription: {
