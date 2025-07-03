@@ -1,14 +1,26 @@
 import React from 'react';
-import { Document, Page, Text, View, StyleSheet } from '@react-pdf/renderer';
+import { Document, Page, Text, View, StyleSheet, Font } from '@react-pdf/renderer';
 import { ResumeData } from '@/lib/resume-types';
+
+// Register Times New Roman font (using built-in Times-Roman)
+Font.register({
+  family: 'Times-Roman',
+  fonts: [
+    { src: 'Times-Roman' },
+    { src: 'Times-Bold', fontWeight: 'bold' },
+    { src: 'Times-Italic', fontStyle: 'italic' },
+    { src: 'Times-BoldItalic', fontWeight: 'bold', fontStyle: 'italic' },
+  ]
+});
 
 const styles = StyleSheet.create({
   page: {
-    fontFamily: 'Helvetica',
+    fontFamily: 'Times-Roman',
     fontSize: 9,
     lineHeight: 1.2,
     color: '#1f2937',
     padding: 20,
+    paddingTop: 30, // Added top padding for the name
     backgroundColor: '#ffffff',
   },
   header: {
@@ -25,7 +37,8 @@ const styles = StyleSheet.create({
     marginBottom: 6,
     textAlign: 'center',
   },
-  contactInfo: {
+  // Side by side layout
+  contactInfoSideBySide: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'flex-start',
@@ -39,8 +52,19 @@ const styles = StyleSheet.create({
     flex: 1,
     textAlign: 'right',
   },
+  // Centered layout
+  contactInfoCentered: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    fontSize: 8,
+    color: '#4b5563',
+    textAlign: 'center',
+  },
   contactItem: {
     marginBottom: 1,
+  },
+  contactLineCentered: {
+    marginBottom: 2,
   },
   section: {
     marginBottom: 10,
@@ -75,13 +99,13 @@ const styles = StyleSheet.create({
   degreeText: {
     fontSize: 8,
     color: '#374151',
-    fontFamily: 'Helvetica-Oblique',
+    fontStyle: 'italic',
     flex: 1,
   },
   dateText: {
     fontSize: 8,
     color: '#6b7280',
-    fontFamily: 'Helvetica-Oblique',
+    fontStyle: 'italic',
   },
   locationText: {
     fontSize: 8,
@@ -125,7 +149,7 @@ const styles = StyleSheet.create({
   positionTitle: {
     fontSize: 8,
     color: '#374151',
-    fontFamily: 'Helvetica-Oblique',
+    fontStyle: 'italic',
     marginBottom: 1,
   },
   experienceLocation: {
@@ -159,7 +183,7 @@ const styles = StyleSheet.create({
   projectMeta: {
     fontSize: 8,
     color: '#6b7280',
-    fontFamily: 'Helvetica-Oblique',
+    fontStyle: 'italic',
     marginBottom: 2,
   },
   projectDescription: {
@@ -195,42 +219,72 @@ const ResumeDocument: React.FC<ResumeDocumentProps> = ({ resumeData }) => {
     return url.replace(/^https?:\/\//, '').replace(/\/$/, '');
   };
 
+  const isCenteredLayout = resumeData.personalInfo.contactLayout === 'centered';
+
+  const renderContactInfo = () => {
+    if (isCenteredLayout) {
+      return (
+        <View style={styles.contactInfoCentered}>
+          <Text style={styles.contactLineCentered}>
+            Email: {resumeData.personalInfo.email} | Phone: {resumeData.personalInfo.phone}
+          </Text>
+          <Text style={styles.contactLineCentered}>
+            Location: {resumeData.personalInfo.location}
+          </Text>
+          {(resumeData.personalInfo.linkedin || resumeData.personalInfo.github || resumeData.personalInfo.portfolio) && (
+            <Text style={styles.contactLineCentered}>
+              {[
+                resumeData.personalInfo.linkedin && `LinkedIn: ${cleanUrl(resumeData.personalInfo.linkedin)}`,
+                resumeData.personalInfo.github && `GitHub: ${cleanUrl(resumeData.personalInfo.github)}`,
+                resumeData.personalInfo.portfolio && `Portfolio: ${cleanUrl(resumeData.personalInfo.portfolio)}`
+              ].filter(Boolean).join(' | ')}
+            </Text>
+          )}
+        </View>
+      );
+    } else {
+      return (
+        <View style={styles.contactInfoSideBySide}>
+          <View style={styles.contactLeft}>
+            <Text style={styles.contactItem}>
+              Email: {resumeData.personalInfo.email}
+            </Text>
+            <Text style={styles.contactItem}>
+              Phone: {resumeData.personalInfo.phone}
+            </Text>
+            <Text style={styles.contactItem}>
+              Location: {resumeData.personalInfo.location}
+            </Text>
+          </View>
+          <View style={styles.contactRight}>
+            {resumeData.personalInfo.linkedin && (
+              <Text style={styles.contactItem}>
+                LinkedIn: {cleanUrl(resumeData.personalInfo.linkedin)}
+              </Text>
+            )}
+            {resumeData.personalInfo.github && (
+              <Text style={styles.contactItem}>
+                GitHub: {cleanUrl(resumeData.personalInfo.github)}
+              </Text>
+            )}
+            {resumeData.personalInfo.portfolio && (
+              <Text style={styles.contactItem}>
+                Portfolio: {cleanUrl(resumeData.personalInfo.portfolio)}
+              </Text>
+            )}
+          </View>
+        </View>
+      );
+    }
+  };
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
         {/* Header Section */}
         <View style={styles.header}>
           <Text style={styles.name}>{resumeData.personalInfo.name}</Text>
-          <View style={styles.contactInfo}>
-            <View style={styles.contactLeft}>
-              <Text style={styles.contactItem}>
-                Email: {resumeData.personalInfo.email}
-              </Text>
-              <Text style={styles.contactItem}>
-                Phone: {resumeData.personalInfo.phone}
-              </Text>
-              <Text style={styles.contactItem}>
-                Location: {resumeData.personalInfo.location}
-              </Text>
-            </View>
-            <View style={styles.contactRight}>
-              {resumeData.personalInfo.linkedin && (
-                <Text style={styles.contactItem}>
-                  LinkedIn: {cleanUrl(resumeData.personalInfo.linkedin)}
-                </Text>
-              )}
-              {resumeData.personalInfo.github && (
-                <Text style={styles.contactItem}>
-                  GitHub: {cleanUrl(resumeData.personalInfo.github)}
-                </Text>
-              )}
-              {resumeData.personalInfo.portfolio && (
-                <Text style={styles.contactItem}>
-                  Portfolio: {cleanUrl(resumeData.personalInfo.portfolio)}
-                </Text>
-              )}
-            </View>
-          </View>
+          {renderContactInfo()}
         </View>
 
         {/* Education Section */}

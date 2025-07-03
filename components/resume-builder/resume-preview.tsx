@@ -11,11 +11,17 @@ interface ResumePreviewProps {
 const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, resumeRef }) => {
   const styles = {
     container: "bg-white p-6 shadow-lg mx-auto max-w-[210mm] resume-container",
-    header: "flex justify-between items-start mb-4 pb-2 border-b border-gray-200",
-    name: "text-lg font-bold text-gray-900",
+    header: "mb-4 pb-2 border-b border-gray-200",
+    headerSideBySide: "flex justify-between items-start",
+    headerCentered: "text-center",
+    name: "text-lg font-bold text-gray-900 mb-2",
+    nameCentered: "text-lg font-bold text-gray-900 mb-3",
     contact: "text-xs text-gray-600 space-y-0.5",
+    contactCentered: "text-xs text-gray-600 space-y-1 flex flex-col items-center",
+    contactLeft: "flex flex-col",
+    contactRight: "flex flex-col text-right",
     section: "mb-3",
-    sectionTitle: "text-sm font-bold border-b pb-1 mb-2 uppercase text-gray-900",
+    sectionTitle: "text-sm font-bold pb-1 mb-2 uppercase text-gray-900 border-b border-gray-200",
     education: "mb-2",
     educationInstitution: "font-bold text-xs text-gray-900",
     educationDetails: "flex justify-between items-start",
@@ -38,6 +44,8 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, resumeRef }) 
     achievements: "ml-4 list-disc text-xs text-gray-700",
   }
 
+  const isCenteredLayout = resumeData.personalInfo.contactLayout === 'centered';
+
   return (
     <div
       ref={resumeRef}
@@ -48,24 +56,48 @@ const ResumePreview: React.FC<ResumePreviewProps> = ({ resumeData, resumeRef }) 
         margin: "0 auto",
         fontSize: "10pt",
         lineHeight: "1.3",
-        fontFamily: "Tahoma, sans-serif",
+        fontFamily: "'Times New Roman', Times, serif",
+        paddingTop: "20mm", // Added top padding for the name
       }}
     >
       {/* Header Section */}
-      <div className={styles.header}>
-        <div>
-          <h1 className={styles.name}>{resumeData.personalInfo.name}</h1>
-          <div className={styles.contact}>
-            <p>Email: {resumeData.personalInfo.email}</p>
-            <p>Phone: {resumeData.personalInfo.phone}</p>
-            <p>Location: {resumeData.personalInfo.location}</p>
+      <div className={`${styles.header} ${isCenteredLayout ? styles.headerCentered : styles.headerSideBySide}`}>
+        {isCenteredLayout ? (
+          // Centered Layout
+          <div>
+            <h1 className={styles.nameCentered}>{resumeData.personalInfo.name}</h1>
+            <div className={styles.contactCentered}>
+              <div>Email: {resumeData.personalInfo.email} | Phone: {resumeData.personalInfo.phone}</div>
+              <div>Location: {resumeData.personalInfo.location}</div>
+              {(resumeData.personalInfo.linkedin || resumeData.personalInfo.github || resumeData.personalInfo.portfolio) && (
+                <div>
+                  {[
+                    resumeData.personalInfo.linkedin && `LinkedIn: ${resumeData.personalInfo.linkedin}`,
+                    resumeData.personalInfo.github && `GitHub: ${resumeData.personalInfo.github}`,
+                    resumeData.personalInfo.portfolio && `Portfolio: ${resumeData.personalInfo.portfolio}`
+                  ].filter(Boolean).join(' | ')}
+                </div>
+              )}
+            </div>
           </div>
-        </div>
-        <div className={styles.contact}>
-          <p>LinkedIn: {resumeData.personalInfo.linkedin}</p>
-          <p>GitHub: {resumeData.personalInfo.github}</p>
-          <p>Portfolio: {resumeData.personalInfo.portfolio}</p>
-        </div>
+        ) : (
+          // Side by Side Layout
+          <>
+            <div>
+              <h1 className={styles.name}>{resumeData.personalInfo.name}</h1>
+              <div className={`${styles.contact} ${styles.contactLeft}`}>
+                <div>Email: {resumeData.personalInfo.email}</div>
+                <div>Phone: {resumeData.personalInfo.phone}</div>
+                <div>Location: {resumeData.personalInfo.location}</div>
+              </div>
+            </div>
+            <div className={`${styles.contact} ${styles.contactRight}`}>
+              <div>LinkedIn: {resumeData.personalInfo.linkedin}</div>
+              <div>GitHub: {resumeData.personalInfo.github}</div>
+              <div>Portfolio: {resumeData.personalInfo.portfolio}</div>
+            </div>
+          </>
+        )}
       </div>
 
       {/* Education Section */}

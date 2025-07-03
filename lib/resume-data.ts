@@ -9,6 +9,7 @@ export const initialResumeData: ResumeData = {
     linkedin: "linkedin.com/username/",
     github: "github.com/username",
     portfolio: "portfolio.com/username",
+    contactLayout: 'side-by-side', // Default layout
   },
   education: [
     {
